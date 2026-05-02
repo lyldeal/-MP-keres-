@@ -1,154 +1,65 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8">
-  <title>Kereső</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 80px;
-      background: white;
-    }
+<meta charset="UTF-8">
+<title>Kereső</title>
 
-    h1 {
-      font-size: 48px;
-      margin-bottom: 30px;
-    }
+<style>
+body {
+    font-family: Arial;
+    padding: 20px;
+}
 
-    input {
-      width: 520px;
-      padding: 15px 25px;
-      font-size: 20px;
-      border-radius: 30px;
-      border: 1px solid #ccc;
-      outline: none;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
+input {
+    padding: 10px;
+    width: 300px;
+    font-size: 16px;
+}
 
-    .result {
-      margin-top: 35px;
-      text-align: left;
-      display: inline-block;
-      width: 720px;
-    }
+.result {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+</style>
 
-    .card {
-      border-bottom: 1px solid #ddd;
-      padding: 15px;
-      cursor: pointer;
-    }
-
-    .card:hover {
-      background: #f5f5f5;
-    }
-
-    .name {
-      font-size: 20px;
-      font-weight: bold;
-      color: #1a0dab;
-    }
-
-    .tags {
-      color: #333;
-      margin-top: 4px;
-    }
-
-    .desc {
-      color: #555;
-      margin-top: 6px;
-      font-size: 14px;
-    }
-  </style>
 </head>
 <body>
 
-<h1>Kereső</h1>
+<h2>Kereső</h2>
 
-<input type="text" id="search" placeholder="Keress névre, témára, kulcsszóra..." onkeyup="searchPeople()">
+<input type="text" id="search" placeholder="Keresés..." onkeyup="keres()">
 
-<div class="result" id="results"></div>
+<div id="results"></div>
 
 <script>
-const people = [
-  {
-    name: "Farkas-Kéri Tamara",
-    tags: "japán cukorbetegség 1-es típus diabétesz pumpa amerikai foci working holiday mormonok külföld skypegeneráció BL boyslove sci-fi romantika",
-    desc: "Japánhoz kötődő élet, 1-es típusú cukorbetegség tapasztalatok pumpával és hagyományos terápiával, amerikai foci közeli élményeken keresztül, working holiday, külföldi élet, vallási háttér és Skype-generációs családmodell."
-  },
-  {
-    name: "Badar Fruzsina",
-    tags: "egészségügy kórlefolyás betegellátás alternatív gyógyászat kezelés gyógyulás gyógyszermentes egészség",
-    desc: "Egészségügyi témákban jártas, különösen a kórlefolyások és ellátások területén. Nyitott az alternatív gyógyászatra és a gyógyszermentes megoldásokra."
-  },
-  {
-    name: "Anita Flóra",
-    tags: "történelem ókor egészségügy ápolás orvoslás gyermekvédelem gyámhivatal bántalmazás elhanyagolás szexuális abúzus börtön pszichológia pszichiátria onkológia politika vallás szerzetesrend papság prananadi jóslás spanyol koreai kínai PCOS IR COPD",
-    desc: "Széleskörű érdeklődés az egészségügy, történelem, gyermekvédelem és társadalmi témák iránt. Tapasztalat börtönökkel, rendészeti és segítő rendszerekkel kapcsolatban. Foglalkozik önismerettel, mediációval, művészeti és spirituális területekkel. Több nyelven tanul."
-  },
-  {
-    name: "Gyöngy Pipis",
-    tags: "egészségügy ápolás kórházi ápoló háziorvos otthonápolás ügyelet szociális munka idősgondozás gyermekvédelem családsegítés homeopátia spiritualitás hangfürdő családállítás bambuszmasszázs indonézia",
-    desc: "Egészségügyi és szociális területen dolgozó ápoló, tapasztalattal kórházi, háziorvosi és otthonápolásban. Foglalkozik alternatív és spirituális módszerekkel, például homeopátiával, hangfürdővel, családállítással és bambuszmasszázzsal."
-  },
-  {
-    name: "Vinczepap Katalin",
-    tags: "pánik szorongás generalizált szorongás halálfélelem mentális egészség orosz cirill közigazgatás bürokrácia gyermekvédelem gyám törvényes képviselet röplabda edző ellenállásos edzés nagycsalád ikrek tűzoltó",
-    desc: "Saját tapasztalaton alapuló tudás a szorongás és pánik kezelésében, könyvíróként is. Több évtizedes közigazgatási és gyermekvédelmi háttérrel rendelkezik. Sportos múltja van röplabdában, edzőként is aktív, valamint családi és életmódbeli tapasztalatokkal is segít."
-  },
-  {
-    name: "Nóri Martyn",
-    tags: "matek matematika oktatás tanítás kezdő pedagógus egyetem egyetemi rendszer bürokrácia trauma gyerekkori trauma pszichológus önismeret hímzés horgolás jog jogi alapok",
-    desc: "Magas szintű matematikai tudás, egyetemi és oktatási tapasztalatokkal. Rálátása van a pedagóguslét nehézségeire és az oktatási rendszer működésére. Személyes tapasztalatokkal rendelkezik trauma feldolgozás és önismeret terén, valamint kreatív kézimunkával is foglalkozik."
-  },
-  {
-    name: "Stella Alexandra Jónás",
-    tags: "magyar zeneipar cigány kultúra zongora kotta gitár cimbalom zenekar otthonápolás súlyos beteg nárcisztikus kapcsolat bántalmazó kapcsolat tunézia tunéziai kultúra muszlim temetés svájc liechtenstein kutyaharapás császármetszés rehabilitáció recepció reptéri hotel pincér vendéglátás kulturális különbségek",
-    desc: "Zenei háttérrel és erős kulturális tapasztalatokkal rendelkezik. Széleskörű élethelyzeti tapasztalata van otthonápolásban, párkapcsolati dinamikákban, vendéglátásban és nemzetközi környezetben. Sokféle extrém és tanulságos élethelyzetet élt meg."
-  },
-  {
-    name: "Graller-Taró Ágnes",
-    tags: "pánik pánikbetegség pánikroham szorongás mentális egészség újraélesztés elsősegély kereskedelem szeretetnyelvek érintéstől való félelem intimitás demiszexualitás disszociatív személyiségzavar DID skizofrénia",
-    desc: "Saját tapasztalat és tanulmányok alapján jártas a szorongás, pánik és ezek leküzdésének témájában. Emellett elsősegély- és újraélesztési ismeretekkel rendelkezik. Foglalkozik párkapcsolati és önismereti kérdésekkel, valamint pszichológiai témákkal."
-  },
-  {
-    name: "Gyurkó Mónika",
-    tags: "olaszország olasz nyelv olasz család olasz élet kultúra harley motor motorozás motoros életérzés motoros banda közösség életstílus utazás",
-    desc: "Olaszországhoz és az olasz élethez kötődő tapasztalatokkal rendelkezik: család, nyelv, mindennapok, napos és sötét oldal. Emellett betekintése van a motoros életstílusba, Harley kultúrába és motoros közösségekbe."
-  },
-  {
-    name: "Halász Emese",
-    tags: "lovaglás ló betörése arab telivér nonius vadászat agyaggalamb lövészet fegyver sörétes puska kézifegyver zsigerelés nyúzás balett jazzbalett klasszikus tánc bachata kubai salsa komolyzene plébánia önkéntesség menekültek politika konzulátus energiagyógyászat ezotéria szellemvilág entitás démon szelleműzés paranormális trauma gyermekbántalmazás abúzus rendőrség drog leszokás előadás prezentáció előadástechnika kommunikáció",
-    desc: "Rendkívül sokrétű tapasztalat: lovaglás, vadászat, fegyverismeret, állatfeldolgozás, tánc és zene. Szociális, rendészeti és politikai háttértapasztalatokkal is rendelkezik. Jártas spirituális és ezoterikus témákban, traumák, rendőrségi helyzetek és drogprevenció terén. Aktív előadó és prezentációs tréner."
-  }
-];
+let adatok = [];
 
-function searchPeople() {
-  const input = document.getElementById("search").value.toLowerCase();
-  const results = document.getElementById("results");
-
-  results.innerHTML = "";
-
-  people.forEach(person => {
-    const searchableText = (
-      person.name + " " +
-      person.tags + " " +
-      person.desc
-    ).toLowerCase();
-
-    if (searchableText.includes(input)) {
-      results.innerHTML += `
-        <div class="card" onclick="alert('${person.desc.replace(/'/g, "\\'")}')">
-          <div class="name">${person.name}</div>
-          <div class="tags">${person.tags}</div>
-          <div class="desc">${person.desc}</div>
-        </div>
-      `;
+fetch("adatok.csv")
+.then(response => response.text())
+.then(text => {
+    let sorok = text.split("\n");
+    for (let sor of sorok) {
+        let oszlopok = sor.split(";");
+        adatok.push(oszlopok);
     }
-  });
-}
+});
 
-searchPeople();
+function keres() {
+    let input = document.getElementById("search").value.toLowerCase();
+    let results = document.getElementById("results");
+    results.innerHTML = "";
+
+    for (let sor of adatok) {
+        let talalat = sor.join(" ").toLowerCase();
+        if (talalat.includes(input)) {
+            let div = document.createElement("div");
+            div.className = "result";
+            div.innerText = sor.join(" | ");
+            results.appendChild(div);
+        }
+    }
+}
 </script>
 
 </body>
