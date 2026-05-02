@@ -6,19 +6,50 @@
 
 <style>
 body {
-    font-family: Arial;
-    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 30px;
 }
 
-input {
-    padding: 10px;
+h2 {
+    text-align: center;
+}
+
+#search {
+    display: block;
+    margin: 0 auto;
+    padding: 12px;
     width: 300px;
     font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+#results {
+    margin-top: 20px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .result {
+    background: white;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.result:hover {
+    background: #eaeaea;
+}
+
+.description {
     margin-top: 10px;
     padding: 10px;
+    background: #fff;
+    border-radius: 8px;
     border: 1px solid #ccc;
 }
 </style>
@@ -32,13 +63,17 @@ input {
 
 <div id="results"></div>
 
+<div id="desc" class="description" style="display:none;"></div>
+
 <script>
 let adatok = [];
 
 fetch("adatok.csv")
-.then(response => response.text())
+.then(res => res.text())
 .then(text => {
     let sorok = text.split("\n");
+    sorok.shift(); // fejléc törlése
+
     for (let sor of sorok) {
         let oszlopok = sor.split(";");
         adatok.push(oszlopok);
@@ -48,14 +83,25 @@ fetch("adatok.csv")
 function keres() {
     let input = document.getElementById("search").value.toLowerCase();
     let results = document.getElementById("results");
+    let desc = document.getElementById("desc");
+
     results.innerHTML = "";
+    desc.style.display = "none";
 
     for (let sor of adatok) {
-        let talalat = sor.join(" ").toLowerCase();
-        if (talalat.includes(input)) {
+        let nev = sor[0];
+        let teljes = sor.join(" ").toLowerCase();
+
+        if (teljes.includes(input) && input !== "") {
             let div = document.createElement("div");
             div.className = "result";
-            div.innerText = sor.join(" | ");
+            div.innerText = nev;
+
+            div.onclick = () => {
+                desc.style.display = "block";
+                desc.innerHTML = "<b>" + nev + "</b><br><br>" + sor.join("<br>");
+            };
+
             results.appendChild(div);
         }
     }
