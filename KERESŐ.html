@@ -6,105 +6,183 @@
 
 <style>
 body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    padding: 30px;
+  font-family: Arial, sans-serif;
+  background: #f8f9fa;
+  text-align: center;
+  padding: 60px 20px;
 }
 
-h2 {
-    text-align: center;
+h1 {
+  font-size: 46px;
+  margin-bottom: 25px;
 }
 
-#search {
-    display: block;
-    margin: 0 auto;
-    padding: 12px;
-    width: 300px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+input {
+  width: 420px;
+  max-width: 90%;
+  padding: 14px 20px;
+  font-size: 18px;
+  border-radius: 28px;
+  border: 1px solid #ccc;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 #results {
-    margin-top: 20px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+  margin: 30px auto;
+  max-width: 600px;
+  text-align: left;
 }
 
-.result {
-    background: white;
-    padding: 12px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.2s;
+.name-card {
+  background: white;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a0dab;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.12);
 }
 
-.result:hover {
-    background: #eaeaea;
+.name-card:hover {
+  background: #eef3ff;
 }
 
-.description {
-    margin-top: 10px;
-    padding: 10px;
-    background: #fff;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+#profile {
+  display: none;
+  max-width: 700px;
+  margin: 25px auto;
+  background: white;
+  padding: 22px;
+  border-radius: 14px;
+  text-align: left;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+#profile h2 {
+  margin-top: 0;
+  color: #1a0dab;
+}
+
+.section-title {
+  margin-top: 15px;
+  font-weight: bold;
+  color: #444;
 }
 </style>
 
 </head>
 <body>
 
-<h2>Kereső</h2>
+<h1>Kereső</h1>
 
-<input type="text" id="search" placeholder="Keresés..." onkeyup="keres()">
+<input id="search" type="text" placeholder="Keress kulcsszóra vagy névre..." onkeyup="searchPeople()">
 
 <div id="results"></div>
 
-<div id="desc" class="description" style="display:none;"></div>
+<div id="profile"></div>
 
 <script>
-let adatok = [];
+let people = [];
 
+// CSV feldolgozó (kezeli az idézőjeleket is)
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      cell += '"';
+      i++;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      row.push(cell);
+      cell = "";
+    } else if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (cell || row.length) {
+        row.push(cell);
+        rows.push(row);
+        row = [];
+        cell = "";
+      }
+    } else {
+      cell += char;
+    }
+  }
+
+  if (cell || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+// CSV betöltés
 fetch("adatok.csv")
-.then(res => res.text())
-.then(text => {
-    let sorok = text.split("\n");
-    sorok.shift(); // fejléc törlése
+  .then(res => res.text())
+  .then(text => {
+    const rows = parseCSV(text);
+    rows.shift(); // fejléc törlése
 
-    for (let sor of sorok) {
-        let oszlopok = sor.split(";");
-        adatok.push(oszlopok);
-    }
-});
+    people = rows.map(row => ({
+      name: row[0] || "",
+      strengths: row[1] || "",
+      topics: row[2] || "",
+      description: row[3] || ""
+    }));
+  });
 
-function keres() {
-    let input = document.getElementById("search").value.toLowerCase();
-    let results = document.getElementById("results");
-    let desc = document.getElementById("desc");
+// keresés
+function searchPeople() {
+  const query = document.getElementById("search").value.toLowerCase().trim();
+  const results = document.getElementById("results");
+  const profile = document.getElementById("profile");
 
-    results.innerHTML = "";
-    desc.style.display = "none";
+  results.innerHTML = "";
+  profile.style.display = "none";
 
-    for (let sor of adatok) {
-        let nev = sor[0];
-        let teljes = sor.join(" ").toLowerCase();
+  if (query === "") return;
 
-        if (teljes.includes(input) && input !== "") {
-            let div = document.createElement("div");
-            div.className = "result";
-            div.innerText = nev;
+  const filtered = people.filter(person => {
+    const allText = (
+      person.name + " " +
+      person.strengths + " " +
+      person.topics + " " +
+      person.description
+    ).toLowerCase();
 
-            div.onclick = () => {
-                desc.style.display = "block";
-                desc.innerHTML = "<b>" + nev + "</b><br><br>" + sor.join("<br>");
-            };
+    return allText.includes(query);
+  });
 
-            results.appendChild(div);
-        }
-    }
+  filtered.forEach(person => {
+    const div = document.createElement("div");
+    div.className = "name-card";
+    div.innerText = person.name;
+
+    div.onclick = () => {
+      profile.style.display = "block";
+      profile.innerHTML = `
+        <h2>${person.name}</h2>
+
+        <div class="section-title">Könyves témák</div>
+        <p>${person.topics}</p>
+
+        <div class="section-title">Leírás</div>
+        <p>${person.description}</p>
+      `;
+    };
+
+    results.appendChild(div);
+  });
 }
 </script>
 
